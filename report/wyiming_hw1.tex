@@ -1,0 +1,153 @@
+% You should title the file with a .tex extension (hw1.tex, for example)
+\documentclass[11pt]{article}
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{amsthm}
+\usepackage{fancyhdr}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{color}
+ 
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+ 
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+ 
+\lstset{style=mystyle}
+
+\oddsidemargin0cm
+\topmargin-2cm     %I recommend adding these three lines to increase the 
+\textwidth16.5cm   %amount of usable space on the page (and save trees)
+\textheight23.5cm  
+
+\theoremstyle{theorem}
+\newtheorem{theorem}{Theorem}[section]
+\theoremstyle{lemma}
+\newtheorem{lemma}{Lemma}[section]
+\theoremstyle{property}
+\newtheorem{property}{Property}[section]
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]
+\theoremstyle{assumption}
+\newtheorem{assumption}{Assumption}[section]
+
+
+\newcommand{\question}[2] {\vspace{.25in} \hrule\vspace{0.5em}
+\noindent{\bf #1: #2} \vspace{0.5em}
+\hrule \vspace{.10in}}
+\renewcommand{\part}[1] {\vspace{.10in} {\bf (#1)}}
+
+\newcommand{\myname}{Yiming Wu}
+\newcommand{\myandrew}{wyiming@andrew.cmu.edu}
+\newcommand{\myhwnum}{1}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt plus 1pt}
+ 
+\pagestyle{fancyplain}
+\lhead{\fancyplain{}{\textbf{HW\myhwnum}}}      % Note the different brackets!
+\rhead{\fancyplain{}{\myname\\ \myandrew}}
+\chead{\fancyplain{}{16-720 Computer Vision}}
+
+\begin{document}
+
+\medskip                        % Skip a "medium" amount of space
+                                % (latex determines what medium is)
+                                % Also try: \bigskip, \littleskip
+
+\thispagestyle{plain}
+\begin{center}                  % Center the following lines
+{\Large 16-720 Assignment \myhwnum} \\
+\myname \\
+\myandrew \\
+Computer Vision\\
+2015.09.21 \\
+\end{center}
+
+\question{1}{What properties do each of the filter functions pick up?}
+\part{a} We can look into all the filters.
+
+\begin{lstlisting}[language=Matlab, caption=Python example]
+for scale = gaussianScales
+    idx = idx + 1;
+    filterBank{idx} = fspecial('gaussian', 2*ceil(scale*2.5)+1, scale);
+end
+
+for scale = logScales
+    idx = idx + 1;
+    filterBank{idx} = fspecial('log', 2*ceil(scale*2.5)+1, scale);
+end
+
+for scale = dxScales
+    idx = idx + 1;
+    f = fspecial('gaussian', 2*ceil(scale*2.5) + 1, scale);
+    f = imfilter(f, [-1 0 1], 'same');
+    filterBank{idx} = f;
+end
+
+for scale = dyScales
+    idx = idx + 1;
+    f = fspecial('gaussian', 2*ceil(scale*2.5) + 1, scale);
+    f = imfilter(f, [-1 0 1]', 'same');
+    filterBank{idx} = f;
+end
+\end{lstlisting}
+
+\begin{enumerate}
+	\item The first 5 filters are all Gaussian filters(Gaussian lowpass filter) with scale from 1 to 16. Mainly they let low frequence signals pass, which blur the object and emphasize on the scene.
+	\item The second 5 filters are log(Laplacian of Gaussian filter) filters. They detect edges.
+	\item The third 5 filters are derivatives of Gaussian in x direction, which will detect edges in y direction mainly.
+	\item The last 5 filters are derivatives of Gaussian in y direction, which will detect edges in x direction mainly.
+\end{enumerate}
+
+
+\newpage
+
+\question{2}{Quantitative Evaluation}
+\part{a} My $evaluateRecognitionSystem.m$.
+\begin{lstlisting}[language=Matlab, caption=My evaluateRecognitionSystem.m]
+load('../dat/traintest.mat','test_imagenames','test_labels','mapping');
+load('vision.mat');
+classNum = 8;
+C = zeros(classNum);
+testSize = size(test_labels, 2);
+for k = 1:testSize
+    i = test_labels(k);
+    myGuess = guessImage(['../dat/', test_imagenames{k}]);
+    index = strfind(mapping, myGuess);
+    
+    j = find(not(cellfun('isempty', index)));
+    
+    C(i,j) = C(i,j) + 1;
+end
+
+rate = trace(C) / sum(C(:)) * 100;
+fprintf('accuracy=%d%',rate);
+\end{lstlisting}
+
+
+\end{document}
+

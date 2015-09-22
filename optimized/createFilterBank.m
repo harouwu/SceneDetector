@@ -6,12 +6,9 @@ gaussianScales = [1 2 4 8 sqrt(2)*8];
 logScales      = [1 2 4 8 sqrt(2)*8];
 dxScales       = [1 2 4 8 sqrt(2)*8];
 dyScales       = [1 2 4 8 sqrt(2)*8];
-lplScales      = [1 2 4 8 sqrt(2)*8];
 
 F = makeLMfilters();
-
 filterBank = cell(numel(thetaScales) + numel(gaussianScales) + numel(logScales) + numel(dxScales) + numel(dyScales) + size(F,3),1);
-
 idx = 0;
 
 for theta = thetaScales
@@ -60,11 +57,6 @@ for scale = dyScales
     f = fspecial('gaussian', 2*ceil(scale*2.5) + 1, scale);
     f = imfilter(f, [-1 0 1]', 'same');
     filterBank{idx} = f;
-end
-
-for scale = lplScales
-    idx = idx + 1;
-    filterBank{idx} = fspecial('laplacian', 2*ceil(scale*2.5)+1, scale);
 end
 
 for i=1:size(F,3)
